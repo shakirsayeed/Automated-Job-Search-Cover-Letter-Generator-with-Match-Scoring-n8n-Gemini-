@@ -1,0 +1,2 @@
+# Automated-Job-Search-Cover-Letter-Generator-with-Match-Scoring-n8n-Gemini-
+This project automates job search and application using n8n. It fetches jobs from Google Jobs, scores them against your resume, generates personalized cover letters with Gemini, stores results in Google Sheets, and emails top matches daily. The workflow ranks jobs with a match score and generates tailored cover letters automatically.
