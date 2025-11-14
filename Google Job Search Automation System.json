@@ -1,0 +1,627 @@
+{
+  "name": "Google Job Search Automation System",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9,
+              "triggerAtMinute": 30
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1680,
+        48
+      ],
+      "id": "6cb32615-efac-42a5-bbee-832fb270909b",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "google_jobs",
+        "q": "Data Analyst Jobs latest 3 days",
+        "additionalFields": {
+          "location": "Bangalore"
+        },
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-serpapi.serpApi",
+      "typeVersion": 1,
+      "position": [
+        -1472,
+        48
+      ],
+      "id": "86290d35-25fb-4c19-a554-5de40a0fa5cc",
+      "name": "Google_jobs search",
+      "credentials": {
+        "serpApi": {
+          "id": "wahyqdk8LkrEqkLF",
+          "name": "SerpApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "jobs_results",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -1280,
+        48
+      ],
+      "id": "7409c0f8-e94c-4567-bb2b-8f7ee9098616",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "98ff7201-8aeb-4ac4-9c0a-c4ccd8db2766",
+              "name": "via",
+              "value": "{{ $json.via }}",
+              "type": "string"
+            },
+            {
+              "id": "73d53fd1-67c7-4475-b02f-973dfc7b17d1",
+              "name": "title",
+              "value": "={{ $json.title }}",
+              "type": "string"
+            },
+            {
+              "id": "8b647c1e-74ac-4ac0-b55e-37270859950b",
+              "name": "company_name",
+              "value": "={{ $json.company_name }}",
+              "type": "string"
+            },
+            {
+              "id": "e66c794d-5fb7-4859-8179-3ad05816559f",
+              "name": "location",
+              "value": "={{ $json.location }}",
+              "type": "string"
+            },
+            {
+              "id": "559c374f-64ee-4a16-a1d6-2215d57298fe",
+              "name": "share_link",
+              "value": "={{ $json.share_link }}",
+              "type": "string"
+            },
+            {
+              "id": "b3a8f263-b68e-47f0-9a49-a230bc9947a1",
+              "name": "detected_extensions.posted_at",
+              "value": "={{ $json.detected_extensions.posted_at }}",
+              "type": "string"
+            },
+            {
+              "id": "39440847-c47d-45aa-81dc-ea2d5bd10543",
+              "name": "description",
+              "value": "={{ $json.description }}",
+              "type": "string"
+            },
+            {
+              "id": "d1afa958-6f4c-4054-b1f9-b4eabca613a1",
+              "name": "apply_options[0].title",
+              "value": "={{ $json.apply_options[0].title }}",
+              "type": "string"
+            },
+            {
+              "id": "eedd553b-99d9-43b6-a32f-8d418f874b5e",
+              "name": "apply_options[0].link",
+              "value": "={{ $json.apply_options[0].link }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1088,
+        48
+      ],
+      "id": "5fa674e2-a62d-419d-8c23-a2ce5e15f02d",
+      "name": "Fetching Job Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const item of $input.all()) {\n  // Parse the nested JSON string in item.json.content.parts[0].text\nconst parsed = JSON.parse(item.json.content.parts[0].text);\n\n  // Replace item.json with the parsed flat object plus the new field\n  item.json = {\n    ...parsed,\n    // myNewField: 1\n  };\n\n  \n}\n\nreturn $input.all();\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -288,
+        48
+      ],
+      "id": "253d6788-d037-4602-879a-6444228fe50a",
+      "name": "Fetching Job Score"
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const item of $input.all()) {\n  // Clean the raw text by removing code block markers\n  const raw = item.json.content.parts[0].text\n    .replace(/```json|```/g, \"\") // ✅ fixed regex (no stray `}`)\n    .trim();\n\n  // Parse the cleaned JSON string\n  const parsed = JSON.parse(raw);\n\n  // Replace item.json with the parsed flat object plus the new field\n  item.json = {\n    ...parsed,\n    // myNewField: 1\n  };\n}\n\nreturn $input.all();\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        272,
+        48
+      ],
+      "id": "13c80572-8592-444d-99ae-9ab5a6bec665",
+      "name": "Fetching Cover Letter"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n \"resume\":{ \n  \"name\": \"Syed Shakir Sayeed\",\n  \"location\": \"Bengaluru\",\n  \"phone\": \"+917022722621\",\n  \"email\": \"shakirsayeed19@gmail.com\",\n  \"profiles\": {\n    \"linkedin\": \"https://www.linkedin.com/in/syed-shakir-sayeed-776a6229a/\",\n    \"github\": \"https://github.com/shakirsayeed\"\n  },\n  \"summary\": \"Data Analyst with 3+ years in software development and a Full Stack Data Science and AI certification. Skilled in data cleaning, analysis, visualization, and machine learning. Proficient in Python, SQL, and dashboard creation to derive actionable insights. Aiming to leverage data expertise to drive business growth and decision-making.\",\n  \"education\": [\n    {\n      \"institution\": \"C.M.R Institute of Management Studies (Autonomous)\",\n      \"degree\": \"Master in Computer Application (M.C.A)\",\n      \"field\": \"Computer Science\",\n      \"date\": \"May 2017\",\n      \"certificate\": \"Available\"\n    },\n    {\n      \"institution\": \"Indian Academy Degree College\",\n      \"degree\": \"Bachelor in Computer Application (B.C.A)\",\n      \"field\": \"Computer Science\",\n      \"date\": \"May 2013\",\n      \"certificate\": \"Available\"\n    }\n  ],\n  \"certifications\": [\n    {\n      \"title\": \"Certification in Full Stack Data Science and Artificial Intelligence\",\n      \"issuer\": \"Almabetter\",\n      \"date\": \"March 2024\",\n      \"link\": \"https://verified.sertifier.com/en/verify/51362150307752/\"\n    },\n    {\n      \"title\": \"Software Development Engineer in Testing (S.D.E.T)\",\n      \"issuer\": \"Testing Campus Infotech\",\n      \"date\": \"May 2018\",\n      \"link\": \"https://drive.google.com/file/d/1V7z9TpB0UT7HwsPsRxoI_dF4vNijUxr0/view?usp=sharing\"\n    },\n    {\n      \"title\": \"Hadoop Development and Administration\",\n      \"issuer\": \"I.S.M University\",\n      \"date\": \"July 2016\",\n      \"link\": \"https://drive.google.com/file/d/1J4w0t_OJ6CC7_BERXXocrPnhVpMa3Oj3/view?usp=sharing\"\n    }\n  ],\n  \"skills\": {\n    \"programming_languages_and_tools\": [\n      \"Python 4.2\",\n      \"SQL 4.4\",\n      \"PowerBI 4.5\",\n      \"Tableau 4\",\n      \"Excel 4\",\n      \"GitHub 4.5\",\n      \"Machine Learning\",\n      \"Statistics\",\n      \"NLP\"\n    ],\n    \"platforms\": [\n      \"Google Colab\",\n      \"pgAdmin4\",\n      \"MySQL\",\n      \"PostgreSQL\",\n      \"Jupyter Notebook\"\n    ],\n    \"frameworks\": [\n      \"Pandas\",\n      \"NumPy\",\n      \"Sci-kit Learn\",\n      \"Matplotlib\",\n      \"Seaborn\",\n      \"BeautifulSoup\"\n    ]\n  },\n  \"languages\": [\n    \"English\",\n    \"Hindi\",\n    \"Kannada\"\n  ],\n  \"interests\": [\n    \"Jogging\",\n    \"Badminton\",\n    \"Gourmet Food\"\n  ],\n  \"experience\": [\n    {\n      \"company\": \"Crescent Technosoft\",\n      \"role\": \"Software Developer\",\n      \"location\": \"Bangalore\",\n      \"start_date\": \"October 2021\",\n      \"end_date\": \"Present\",\n      \"responsibilities\": [\n        \"Executed the creation of visually appealing and user-friendly website interfaces, aligning with client specifications and project goals.\",\n        \"Contributed to designing and implementing key features, ensuring adherence to coding standards and project timelines.\",\n        \"Developed and conducted software development training sessions for college students, covering essential programming languages and development tools.\"\n      ]\n    },\n    {\n      \"company\": \"Almabetter\",\n      \"role\": \"Data Analyst Trainee\",\n      \"start_date\": \"March 2023\",\n      \"end_date\": \"Present\",\n      \"responsibilities\": [\n        \"Performed data cleaning and analysis with Pandas and NumPy, using Python and SQL for data extraction and visualization.\",\n        \"Skilled in business intelligence and data visualization using tools like Power BI and Tableau to communicate insights and support decision-making effectively.\",\n        \"Implemented predictive models for clustering using Python and basic machine learning techniques to identify patterns and group data effectively.\"\n      ]\n    }\n  ],\n  \"projects\": [\n    {\n      \"title\": \"Google Play Store Data Analysis\",\n      \"date\": \"Feb 2024\",\n      \"verified\": true,\n      \"details\": [\n        \"Ensured data accuracy through data cleaning and preprocessing using Python, Pandas and NumPy, focusing on outlier detection and missing data handling.\",\n        \"Utilized statistical methods to identify correlations between app features, user ratings, and download numbers, providing actionable insights for app optimization.\",\n        \"Created visualizations and dashboard using Matplotlib and Tableau.\"\n      ],\n      \"tech_stack\": [\n        \"Python\",\n        \"Pandas\",\n        \"NumPy\",\n        \"Data Preprocessing\",\n        \"Data Visualization\",\n        \"Tableau\"\n      ],\n      \"repo\": \"https://github.com/shakirsayeed/PlayStore_DataAnalysis.git\"\n    },\n    {\n      \"title\": \"Netflix Movies & TV Shows - Clustering (Unsupervised Learning)\",\n      \"date\": \"March 2024\",\n      \"verified\": true,\n      \"details\": [\n        \"Conducted EDA on 7,000+ Netflix dataset to uncover trends in content type, genre distribution, and release patterns.\",\n        \"Implemented K-Means Clustering to group similar movies and TV shows based on attributes like genre and release year.\",\n        \"Prepared data for text clustering by cleaning fields, removing stop words, and extracting relevant keywords.\",\n        \"Applied Feature Engineering techniques to improve clustering accuracy.\"\n      ],\n      \"tech_stack\": [\n        \"Python\",\n        \"Data Preprocessing\",\n        \"Machine Learning\",\n        \"Feature Engineering\"\n      ],\n      \"repo\": \"https://github.com/shakirsayeed/Netflix_Movies_-%20_TV_shows_Clustering_Unsupervised_Learning.git\"\n    },\n    {\n      \"title\": \"Unveiling COVID-19 Dynamics in India Through Excel Dashboard Analytics\",\n      \"date\": \"March 2025\",\n      \"verified\": true,\n      \"details\": [\n        \"Performed Data Cleaning and preprocessing on dataset, addressing missing values and adding custom columns.\",\n        \"Designed a COVID-19 dashboard in Excel using pivot tables, functions and charts to analyze trends.\",\n        \"Formulated KPIs such as daily new cases, active cases, CFR, and vaccination coverage.\",\n        \"Forecasted future trends using Excel trendlines.\"\n      ],\n      \"tech_stack\": [\n        \"Microsoft Excel\",\n        \"Pivot Tables\",\n        \"Charts\",\n        \"Formulas\"\n      ],\n      \"repo\": \"https://github.com/shakirsayeed/COVID-19-in-India-Through-Excel-DashboardAnalytics.git\"\n    },\n    {\n      \"title\": \"Unveiling Insights in the Movie Industry Through Data Analysis using PowerBI\",\n      \"date\": \"March 2025\",\n      \"verified\": true,\n      \"details\": [\n        \"Performed data cleaning and preprocessing, addressing missing values and transforming columns.\",\n        \"Merged production and revenue datasets using Power BI.\",\n        \"Utilized DAX queries to create custom Measures and Columns like Profitability, ROI, Ratings, Genres, Star Rating, and Total Revenue impact.\",\n        \"Created interactive Dashboard for financials, audience ratings, and genre trends.\"\n      ],\n      \"tech_stack\": [\n        \"Power BI\",\n        \"Data Preprocessing\",\n        \"DAX Queries\",\n        \"Power Query Editor\",\n        \"Charts\",\n        \"Dashboard\"\n      ],\n      \"repo\": \"https://github.com/shakirsayeed/Movie-Industry-Through-Power-BI-Data-Analysis.git\"\n    }\n  ]\n}\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -864,
+        48
+      ],
+      "id": "17d4c1a8-891b-4d4c-afd8-1d19efe2bcf6",
+      "name": "Parsing Resume in JSON Format"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are in system role; you are a professional job match score evaluator\nCalculate the Job Match Score using the following method:\n-Extract skills from the job title and company(e.g., Python, SQL, Microsoft Excel,Microsoft Power Bi). (provided below)\n-Extract skills from the candidate's resume(provided below).\n- Use cosine similarity between the candidate's skills vector and the job requirement vector.\n-Higher Overlap = higher score"
+            },
+            {
+              "content": "=Job Title and Company :\nTitle: {{ $('Fetching Job Fields').item.json.title }} Company: {{ $('Fetching Job Fields').item.json.company_name }}.\n\nCandidate Resume Details:\n{\n \"resume\":{ \n  \"name\": \"Syed Shakir Sayeed\",\n  \"location\": \"Bengaluru\",\n  \"phone\": \"+917022722621\",\n  \"email\": \"shakirsayeed19@gmail.com\",\n  \"profiles\": {\n    \"linkedin\": \"https://www.linkedin.com/in/syed-shakir-sayeed-776a6229a/\",\n    \"github\": \"https://github.com/shakirsayeed\"\n  },\n  \"summary\": \"Data Analyst with 3+ years in software development and a Full Stack Data Science and AI certification. Skilled in data cleaning, analysis, visualization, and machine learning. Proficient in Python, SQL, and dashboard creation to derive actionable insights. Aiming to leverage data expertise to drive business growth and decision-making.\",\n  \"education\": [\n    {\n      \"institution\": \"C.M.R Institute of Management Studies (Autonomous)\",\n      \"degree\": \"Master in Computer Application (M.C.A)\",\n      \"field\": \"Computer Science\",\n      \"date\": \"May 2017\",\n      \"certificate\": \"Available\"\n    },\n    {\n      \"institution\": \"Indian Academy Degree College\",\n      \"degree\": \"Bachelor in Computer Application (B.C.A)\",\n      \"field\": \"Computer Science\",\n      \"date\": \"May 2013\",\n      \"certificate\": \"Available\"\n    }\n  ],\n  \"certifications\": [\n    {\n      \"title\": \"Certification in Full Stack Data Science and Artificial Intelligence\",\n      \"issuer\": \"Almabetter\",\n      \"date\": \"March 2024\",\n      \"link\": \"https://verified.sertifier.com/en/verify/51362150307752/\"\n    },\n    {\n      \"title\": \"Software Development Engineer in Testing (S.D.E.T)\",\n      \"issuer\": \"Testing Campus Infotech\",\n      \"date\": \"May 2018\",\n      \"link\": \"https://drive.google.com/file/d/1V7z9TpB0UT7HwsPsRxoI_dF4vNijUxr0/view?usp=sharing\"\n    },\n    {\n      \"title\": \"Hadoop Development and Administration\",\n      \"issuer\": \"I.S.M University\",\n      \"date\": \"July 2016\",\n      \"link\": \"https://drive.google.com/file/d/1J4w0t_OJ6CC7_BERXXocrPnhVpMa3Oj3/view?usp=sharing\"\n    }\n  ],\n  \"skills\": {\n    \"programming_languages_and_tools\": [\n      \"Python 4.2\",\n      \"SQL 4.4\",\n      \"PowerBI 4.5\",\n      \"Tableau 4\",\n      \"Excel 4\",\n      \"GitHub 4.5\",\n      \"Machine Learning\",\n      \"Statistics\",\n      \"NLP\"\n    ],\n    \"platforms\": [\n      \"Google Colab\",\n      \"pgAdmin4\",\n      \"MySQL\",\n      \"PostgreSQL\",\n      \"Jupyter Notebook\"\n    ],\n    \"frameworks\": [\n      \"Pandas\",\n      \"NumPy\",\n      \"Sci-kit Learn\",\n      \"Matplotlib\",\n      \"Seaborn\",\n      \"BeautifulSoup\"\n    ]\n  },\n  \"languages\": [\n    \"English\",\n    \"Hindi\",\n    \"Kannada\"\n  ],\n  \"interests\": [\n    \"Jogging\",\n    \"Badminton\",\n    \"Gourmet Food\"\n  ],\n  \"experience\": [\n    {\n      \"company\": \"Crescent Technosoft\",\n      \"role\": \"Software Developer\",\n      \"location\": \"Bangalore\",\n      \"start_date\": \"October 2021\",\n      \"end_date\": \"Present\",\n      \"responsibilities\": [\n        \"Executed the creation of visually appealing and user-friendly website interfaces, aligning with client specifications and project goals.\",\n        \"Contributed to designing and implementing key features, ensuring adherence to coding standards and project timelines.\",\n        \"Developed and conducted software development training sessions for college students, covering essential programming languages and development tools.\"\n      ]\n    },\n    {\n      \"company\": \"Almabetter\",\n      \"role\": \"Data Analyst Trainee\",\n      \"start_date\": \"March 2023\",\n      \"end_date\": \"Present\",\n      \"responsibilities\": [\n        \"Performed data cleaning and analysis with Pandas and NumPy, using Python and SQL for data extraction and visualization.\",\n        \"Skilled in business intelligence and data visualization using tools like Power BI and Tableau to communicate insights and support decision-making effectively.\",\n        \"Implemented predictive models for clustering using Python and basic machine learning techniques to identify patterns and group data effectively.\"\n      ]\n    }\n  ],\n  \"projects\": [\n    {\n      \"title\": \"Google Play Store Data Analysis\",\n      \"date\": \"Feb 2024\",\n      \"verified\": true,\n      \"details\": [\n        \"Ensured data accuracy through data cleaning and preprocessing using Python, Pandas and NumPy, focusing on outlier detection and missing data handling.\",\n        \"Utilized statistical methods to identify correlations between app features, user ratings, and download numbers, providing actionable insights for app optimization.\",\n        \"Created visualizations and dashboard using Matplotlib and Tableau.\"\n      ],\n      \"tech_stack\": [\n        \"Python\",\n        \"Pandas\",\n        \"NumPy\",\n        \"Data Preprocessing\",\n        \"Data Visualization\",\n        \"Tableau\"\n      ],\n      \"repo\": \"https://github.com/shakirsayeed/PlayStore_DataAnalysis.git\"\n    },\n    {\n      \"title\": \"Netflix Movies & TV Shows - Clustering (Unsupervised Learning)\",\n      \"date\": \"March 2024\",\n      \"verified\": true,\n      \"details\": [\n        \"Conducted EDA on 7,000+ Netflix dataset to uncover trends in content type, genre distribution, and release patterns.\",\n        \"Implemented K-Means Clustering to group similar movies and TV shows based on attributes like genre and release year.\",\n        \"Prepared data for text clustering by cleaning fields, removing stop words, and extracting relevant keywords.\",\n        \"Applied Feature Engineering techniques to improve clustering accuracy.\"\n      ],\n      \"tech_stack\": [\n        \"Python\",\n        \"Data Preprocessing\",\n        \"Machine Learning\",\n        \"Feature Engineering\"\n      ],\n      \"repo\": \"https://github.com/shakirsayeed/Netflix_Movies_-%20_TV_shows_Clustering_Unsupervised_Learning.git\"\n    },\n    {\n      \"title\": \"Unveiling COVID-19 Dynamics in India Through Excel Dashboard Analytics\",\n      \"date\": \"March 2025\",\n      \"verified\": true,\n      \"details\": [\n        \"Performed Data Cleaning and preprocessing on dataset, addressing missing values and adding custom columns.\",\n        \"Designed a COVID-19 dashboard in Excel using pivot tables, functions and charts to analyze trends.\",\n        \"Formulated KPIs such as daily new cases, active cases, CFR, and vaccination coverage.\",\n        \"Forecasted future trends using Excel trendlines.\"\n      ],\n      \"tech_stack\": [\n        \"Microsoft Excel\",\n        \"Pivot Tables\",\n        \"Charts\",\n        \"Formulas\"\n      ],\n      \"repo\": \"https://github.com/shakirsayeed/COVID-19-in-India-Through-Excel-DashboardAnalytics.git\"\n    },\n    {\n      \"title\": \"Unveiling Insights in the Movie Industry Through Data Analysis using PowerBI\",\n      \"date\": \"March 2025\",\n      \"verified\": true,\n      \"details\": [\n        \"Performed data cleaning and preprocessing, addressing missing values and transforming columns.\",\n        \"Merged production and revenue datasets using Power BI.\",\n        \"Utilized DAX queries to create custom Measures and Columns like Profitability, ROI, Ratings, Genres, Star Rating, and Total Revenue impact.\",\n        \"Created interactive Dashboard for financials, audience ratings, and genre trends.\"\n      ],\n      \"tech_stack\": [\n        \"Power BI\",\n        \"Data Preprocessing\",\n        \"DAX Queries\",\n        \"Power Query Editor\",\n        \"Charts\",\n        \"Dashboard\"\n      ],\n      \"repo\": \"https://github.com/shakirsayeed/Movie-Industry-Through-Power-BI-Data-Analysis.git\"\n    }\n  ]\n}\n}\n\n",
+              "role": "model"
+            },
+            {
+              "content": "=You are a helpful Assistant\nGenerate only the following output in JSON structure:  (no metadata, no extra explanations)\n{\n\"Job Score\": \"XX/100\"\n}\n\n"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -640,
+        48
+      ],
+      "id": "e92f1ee7-ada2-4fd5-94e4-443999f307d6",
+      "name": "Modeling Job Score",
+      "retryOnFail": true,
+      "maxTries": 5,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "mqYCjLyVAiQZFurF",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are a professional cover letter writer and job fit evaluator.\nGenerate only the following output (no JSON, no metadata, no extra explanations):\n1. A personalized, properly formatted, professional cover letter for a {{ $('Fetching Job Fields').item.json.title }} at {{ $('Fetching Job Fields').item.json.company_name }} in {{ $('Fetching Job Fields').item.json.location }}.\n-Begin with the candidate's contact details (provided below) at the top(Name, Email, Phone, LinkedIn).\n-Insert todays date ({{$now.format(\"DD\")}}).\n-Follow the standard cover letter format:\nDate, Recipient Details, Greeting, Body, Closing\n-The body should be 300- 350 words, enthusiastic, detailed, and tailored to \n{{ $('Fetching Job Fields').item.json.company_name }}.\n- Highlight the most relevant experiences, skills, certifications, and projects from the candidate's resume\n-Demonstrate enthusiasm, impact, and alignment with {{ $('Fetching Job Fields').item.json.company_name }}'s mission.\n-End with \"Sincerely, [candidate's Name]\"."
+            },
+            {
+              "content": "Here is the Candidate details\nSyed Shakir Sayeed\n Bengaluru\n +917022722621\n shakirsayeed19@gmail.com\nProfiles\nsyed-shakir-sayeed-776a6229a\nLinkedIn\nshakirsayeed\nGitHub\nEducation\nC.M.R Institute of Management Studies\n(Autonomous)\nComputer Science\nMay 2017\nMaster in Computer Application (M.C.A)\n Certificate\nIndian Academy Degree College\nComputer Science\nMay 2013\nBachelor in Computer Application (B.C.A)\n Certificate\nCertifications\nCertification in Full Stack Data Science and\nArtificial Intelligence\nAlmabetter\nMarch 2024\n Certificate Link\nSoftware Development Engineer in Testing\n(S.D.E.T)\nTesting Campus Infotech\nMay 2018\n Certificate Link\nHadoop Development and Administration\nI.S.M University\nJuly 2016\n Certificate Link\nSkills\nProgramming Language and Tools\nPython 4.2, SQL 4.4, PowerBI 4.5, Tableau 4, Excel 4,\nGitHub 4.5, Machine Learning, Statistics, NLP\nPlatforms\nGoogle Colab, pgAdmin4, MySQL, PostgreSQL,\nJupyter Notebook\nFrameworks\nPandas, NumPy, Sci-kit Learn, Matplotlib, Seaborn,\nBeautifulSoup\nInterests\nInterests\nJogging, Badminton, Gourmet Food\nLanguages\nEnglish\nHindi\nKannada\nData Analyst with 3+ years in software development and a Full Stack Data Science and AI\ncertification. Skilled in data cleaning, analysis, visualization, and machine learning. Proficient in\nPython, SQL, and dashboard creation to derive actionable insights. Aiming to leverage data\nexpertise to drive business growth and decision-making.\nExperience\nCrescent Technosoft October 2021 - Present\nBangalore\n Software Developer\nExecuted the creation of visually appealing and user-friendly website interfaces, aligning\nwith client specifications and project goals.\nContributed to designing and implementing key features, ensuring adherence to coding\nstandards and project timelines.\nDeveloped and conducted software development training sessions for college students,\ncovering essential programming languages and development tools\nAlmabetter March 2023- Present\n Data Analyst Trainee\nPerformed data cleaning and analysis with Pandas and NumPy, using Python and SQL for\ndata extraction and visualization.\nSkilled in business intelligence and data visualization using tools like Power BI and Tableau\nto communicate insights and support decision-making effectively.\nImplemented predictive models for clustering using Python and basic machine learning\ntechniques to identify patterns and group data effectively.\nProjects\nGoogle Play Store Data Analysis Feb 2024\n Almabetter Verified Project\nEnsured data accuracy through data cleaning and preprocessing using Python, Pandas and\nNumPy, focusing on outlier detection and missing data handling.\nUtilized statistical methods to identify correlations between app features, user ratings, and\ndownload numbers, providing actionable insights for app optimization.\nCreated visualizations and dashboard using toolslike Matplotlib and Tableau to present\nfindings clearly and compellingly.\nPython, Pandas, NumPy, Data Preprocessing, Data Visualization, Tableau\nNetflix Movies & TV_shows-Clustering_Unsupervised_Learning March 2024\n Almabetter Verified Project\nConducted Exploratory Data Analysis (EDA) on 7,000+ Netflix dataset to uncover trends in\ncontent type, genre distribution, and release patterns, forming a basis for clustering,\nincluding handling null values and standardizing formats.\nImplemented K-Means Clustering to group similar movies and TV shows based on\nattributes like genre and release year, leveraging unsupervised learning.\nPrepared data for text clustering by cleaning fields, removing stop words, and extracting\nrelevant keywords to improve clustering accuracy.\nApplied Feature Engineering techniques to improve clustering accuracy by enhancing both\nmodel performance and visualization of clusters.\nDeveloped insightful visualizations using Seaborn and Matplotlib to interpret cluster\ncharacteristics and reveal meaningful information\nPython, Data Preprocessing, Machine Learning, Feature Engineering\nUnveiling COVID-19 Dynamics in India Through Excel Dashboard Analytics March 2025\n Almabetter Verified Project\nPerformed Data Cleaning and preprocessing on a dataset. Addressed missing values,\ntransformed columns, and adding custom columns for analytical purposes.\nDesigned a COVID-19 dashboard in Excel using pivot tables , Functions and charts to\nanalyze trends in cases, vaccinations, and testing.\nFormulated KPIs such as daily new cases, active cases, CFR, and vaccination coverage.\nForecasted future trends using Excel trendlines.\nMicrosoft Excel, Pivot Tables, Charts, Formulas\nUnveiling Insights in the Movie Industry Through Data Analysis using PowerBI March 2025\n Almabetter Verified Project\nPerformed data cleaning and preprocessing. Addressed missing values, transformed\ncolumns. Merged production and revenue datasets using Power BI.\nUtilized DAX queries to create custom Measures and Columns like Profitability, ROI, ratings,\ngenres, Star Rating and Total Revenue impact.\nCreated interactive Dashboard for financials, audience ratings, and genre trends.\nPower BI, Data Preprocessing, DAX Queries, Power Query Editor, Charts, Dashboard"
+            },
+            {
+              "content": "you are an intelligent Assistant:\nOutput the cover letter in JSON structure given below:\n{\n\"Cover Letter\":\" \"\n}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        48
+      ],
+      "id": "c50e4246-53a0-4814-86b7-1f95dd993656",
+      "name": "Modeling Cover Letter",
+      "retryOnFail": true,
+      "maxTries": 5,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "mqYCjLyVAiQZFurF",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1lBVWeBmaG8Fs6eannbeN18tIXEsDq0KN80741UcrhVc",
+          "mode": "list",
+          "cachedResultName": "Google Job_Listings",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lBVWeBmaG8Fs6eannbeN18tIXEsDq0KN80741UcrhVc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lBVWeBmaG8Fs6eannbeN18tIXEsDq0KN80741UcrhVc/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "URL Link": "={{ $('Fetching Job Fields').item.json.share_link }}",
+            "Company Name": "={{ $('Fetching Job Fields').item.json.company_name }}",
+            "Date": "={{ $('Fetching Job Fields').item.json.detected_extensions.posted_at }}",
+            "Title": "={{ $('Fetching Job Fields').item.json.title }}",
+            "Location": "={{ $('Fetching Job Fields').item.json.location }}",
+            "Job Description ": "={{ $('Fetching Job Fields').item.json.description }}",
+            "Apply Link": "={{ $('Fetching Job Fields').item.json.apply_options[0].link }}",
+            "Job Score": "={{ $('Fetching Job Score').item.json['Job Score'] }}",
+            "Cover Letter": "={{ $json['Cover Letter'] }}"
+          },
+          "matchingColumns": [
+            "URL Link"
+          ],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Location",
+              "displayName": "Location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Job Description ",
+              "displayName": "Job Description ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "URL Link",
+              "displayName": "URL Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Apply Link",
+              "displayName": "Apply Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Job Score",
+              "displayName": "Job Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Cover Letter",
+              "displayName": "Cover Letter",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        496,
+        48
+      ],
+      "id": "8c0775f2-1fee-476f-b766-b36b2f8ed3d1",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "xSLCDXsXGgQysazC",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "shakirsayeed19@gmail.com",
+        "subject": "=Looking for {{ $json.Title }} job",
+        "emailType": "text",
+        "message": "={{ $json['Cover Letter'] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1360,
+        48
+      ],
+      "id": "8a8ef606-50af-4868-b039-bc8fe965857b",
+      "name": "Send a message",
+      "webhookId": "ce7eb65d-eeb3-42f2-a4ef-9c7d57bcb781",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "0Vnk7sEdYa4x5uMS",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "maxItems": 5
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        1136,
+        48
+      ],
+      "id": "fbb86462-2e72-491e-8896-62b47db36bcf",
+      "name": "Limit1"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  // Get the job score string (example: \"100/100\")\n  let scoreStr = item.json['Job Score'];\n\n  // Extract the number before the slash\n  let score = parseInt(scoreStr.split('/')[0], 10);\n\n  // Save it back as a number in a new field\n  item.json.score = score;\n\n  return item;\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        48
+      ],
+      "id": "a9adeec1-361f-4712-a3c6-dbe952fd183e",
+      "name": "Converting Job Score to Integer for Sort ing"
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "score",
+              "order": "descending"
+            }
+          ]
+        },
+        "options": {
+          "disableDotNotation": true
+        }
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        928,
+        48
+      ],
+      "id": "9d5173b1-80cd-4834-af26-aed7639f546e",
+      "name": "Sorting Job Score"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Google_jobs search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google_jobs search": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Fetching Job Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetching Job Fields": {
+      "main": [
+        [
+          {
+            "node": "Parsing Resume in JSON Format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetching Job Score": {
+      "main": [
+        [
+          {
+            "node": "Modeling Cover Letter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parsing Resume in JSON Format": {
+      "main": [
+        [
+          {
+            "node": "Modeling Job Score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Modeling Job Score": {
+      "main": [
+        [
+          {
+            "node": "Fetching Job Score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Modeling Cover Letter": {
+      "main": [
+        [
+          {
+            "node": "Fetching Cover Letter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetching Cover Letter": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Converting Job Score to Integer for Sort ing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit1": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Converting Job Score to Integer for Sort ing": {
+      "main": [
+        [
+          {
+            "node": "Sorting Job Score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sorting Job Score": {
+      "main": [
+        [
+          {
+            "node": "Limit1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Kolkata",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "ty8vwgjnroeF4w3L"
+  },
+  "versionId": "167beefd-6f95-4fff-bd82-548343e63298",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "524a6704a2c59b62f6e572ec54d192c32490b1e95b544e30066ee20c161d788e"
+  },
+  "id": "ty8vwgjnroeF4w3L",
+  "tags": []
+}
